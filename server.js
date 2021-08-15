@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3300
 const mongoose = require('mongoose')
 const session = require('express-session')
 const flash = require('express-flash')
-const MongoDbStore = require('connect-mongo')(session)
+const MongoDbStore = require('connect-mongo')
 const passport = require('passport')
 const Emitter = require('events')
 
@@ -22,12 +22,6 @@ connection.once('open', () => {
 });
 
 
-// Session store
-let mongoStore = new MongoDbStore({
-                mongooseConnection: connection,
-                collection: 'sessions'
-            })
-
 // Event emitter
 const eventEmitter = new Emitter()
 app.set('eventEmitter', eventEmitter)
@@ -36,7 +30,9 @@ app.set('eventEmitter', eventEmitter)
 app.use(session({
     secret: process.env.COOKIE_SECRET,
     resave: false,
-    store: mongoStore,
+    store: MongoDbStore.create({
+        mongoUrl : process.env.MONGO_CONNECTION_URL
+    }),
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hour
 }))
